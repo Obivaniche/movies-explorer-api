@@ -1,4 +1,4 @@
-const Movie = require('../models/movies');
+const Movie = require('../models/movie');
 const ForbiddenError = require('../utils/Forbidden');
 const NotFoundError = require('../utils/NotFound');
 const BadRequestError = require('../utils/BadRequest');
@@ -31,7 +31,7 @@ module.exports.addMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-    Movie.findById(req.params.movieId)
+  Movie.findById(req.params.movieId)
     .then((movie) => {
       if (!movie) {
         throw new NotFoundError('Карточка не найдена');
