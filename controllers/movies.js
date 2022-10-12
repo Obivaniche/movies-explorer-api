@@ -31,7 +31,7 @@ module.exports.addMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-    Movie.findById(req.params.movieId)
+  Movie.findById(req.params.movieId)
     .then((movie) => {
       if (!movie) {
         throw new NotFoundError('Карточка не найдена');
@@ -49,3 +49,4 @@ module.exports.deleteMovie = (req, res, next) => {
       next(err);
     });
 };
+  
