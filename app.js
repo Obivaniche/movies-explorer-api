@@ -9,7 +9,6 @@ const errorRouter = require('./routes/error');
 const appRouter = require('./routes/app');
 const { auth } = require('./middlewares/auth');
 const handleError = require('./middlewares/handleError');
-const NotFoundError = require('./utils/NotFound');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000, NODE_ENV, DATA_URL } = process.env;
