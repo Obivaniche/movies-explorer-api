@@ -1,53 +1,36 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { Joi, celebrate, errors } = require('celebrate');
-const { login, createUser } = require('./controllers/users');
+const { errors } = require('celebrate');
+const helmet = require('helmet');
+const usersRouter = require('./routes/users');
+const moviesRouter = require('./routes/movies');
+const errorRouter = require('./routes/error');
+const appRouter = require('./routes/app');
 const { auth } = require('./middlewares/auth');
 const handleError = require('./middlewares/handleError');
 const NotFoundError = require('./utils/NotFound');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, NODE_ENV, DATA_URL } = process.env;
+
 const app = express();
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
+app.use(helmet());
+
+mongoose.connect(NODE_ENV === 'production' ? DATA_URL : 'mongodb://localhost:27017/bitfilmsdb');
 
 app.use(requestLogger);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post(
-  '/signin',
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required(),
-    }),
-  }),
-  login,
-);
-
-app.post(
-  '/signup',
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required(),
-      name: Joi.string().min(2).max(30),
-    }),
-  }),
-  createUser,
-);
+app.use('/', appRouter);
 
 app.use(auth);
 
-app.use('/users', require('./routes/users'));
-app.use('/movies', require('./routes/movies'));
-
-app.use('*', () => {
-  throw new NotFoundError('Страница не найдена');
-});
+app.use('/', usersRouter);
+app.use('/', moviesRouter);
+app.use('/', errorRouter);
 
 app.use(errorLogger);
 
