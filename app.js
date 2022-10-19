@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
+const cors = require('cors');
 const helmet = require('helmet');
 const usersRouter = require('./routes/users');
 const moviesRouter = require('./routes/movies');
@@ -11,19 +12,39 @@ const appRouter = require('./routes/app');
 const { auth } = require('./middlewares/auth');
 const handleError = require('./middlewares/handleError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const limiter = require('./middlewares/limiter');
 
 const { PORT = 3000, NODE_ENV, DATA_URL } = process.env;
+
+const options = {
+  origin: [
+    'http://localhost:3000',
+    'http://expomovies.nomoredomains.icu/api/',
+  ],
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ['Content-Type', 'origin', 'Authorization', 'Accept'],
+  credentials: true,
+};
 
 const app = express();
 
 app.use(helmet());
+app.use('*', cors(options));
 
-mongoose.connect(NODE_ENV === 'production' ? DATA_URL : 'mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect(NODE_ENV === 'production' ? DATA_URL : 'mongodb://localhost:27017/bitfilmsdb', {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+});
 
 app.use(requestLogger);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(limiter);
 
 app.use('/', appRouter);
 

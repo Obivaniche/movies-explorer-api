@@ -78,32 +78,8 @@ module.exports.updateUserInfo = (req, res, next) => {
         next(new BadRequestError('Некорректный ID'));
         return;
       }
-      next(err);
-    });
-};
-
-module.exports.updateUserAvatar = (req, res, next) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      if (user) {
-        res.send({ data: user });
-        return;
-      }
-      throw new NotFoundError('Пользователь не найден');
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Некорректные данные'));
-        return;
-      }
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Некорректный ID'));
-        return;
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь уже зарегестрирован'));
       }
       next(err);
     });
