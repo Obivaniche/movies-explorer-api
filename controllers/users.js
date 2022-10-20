@@ -5,6 +5,8 @@ const ConflictError = require('../utils/ConflictError');
 const NotFoundError = require('../utils/NotFound');
 const BadRequestError = require('../utils/BadRequest');
 
+const { NODE_ENV, JWT_SECRET } = process.env;
+
 module.exports.getUserMe = (req, res, next) => {
   User.findById(req.user._id).then((user) => {
     if (!user) {
@@ -47,7 +49,7 @@ module.exports.login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key', { expiresIn: '7d' });
       res.send({ token });
     })
     .catch(next);
@@ -76,32 +78,8 @@ module.exports.updateUserInfo = (req, res, next) => {
         next(new BadRequestError('Некорректный ID'));
         return;
       }
-      next(err);
-    });
-};
-
-module.exports.updateUserAvatar = (req, res, next) => {
-  const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      if (user) {
-        res.send({ data: user });
-        return;
-      }
-      throw new NotFoundError('Пользователь не найден');
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Некорректные данные'));
-        return;
-      }
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Некорректный ID'));
-        return;
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь уже зарегестрирован'));
       }
       next(err);
     });

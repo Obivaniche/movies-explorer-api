@@ -1,4 +1,8 @@
-Backend часть дипломного проекта
+## Backend часть дипломного проекта
+
+IP: 84.201.160.126
+
+Домен: expomovies.nomoredomains.icu/api
 
 ## Директории
 
