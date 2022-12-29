@@ -19,7 +19,7 @@ const { PORT = 3000, NODE_ENV, DATA_URL } = process.env;
 const options = {
   origin: [
     'http://localhost:3000',
-    'http://expomovies.nomoredomains.icu/api/',
+    'api.obivaniche-movies.nomoredomains.club',
   ],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   preflightContinue: false,
