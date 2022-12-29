@@ -35,8 +35,6 @@ app.use('*', cors(options));
 
 mongoose.connect(NODE_ENV === 'production' ? DATA_URL : 'mongodb://localhost:27017/bitfilmsdb', {
   useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
 });
 
 app.use(requestLogger);
