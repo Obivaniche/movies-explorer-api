@@ -14,7 +14,7 @@ const handleError = require('./middlewares/handleError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const limiter = require('./middlewares/limiter');
 
-const { PORT = 3000, NODE_ENV, DATA_URL } = process.env;
+const { PORT = 3000 } = process.env;
 
 const options = {
   origin: [
@@ -33,9 +33,7 @@ const app = express();
 app.use(helmet());
 app.use('*', cors(options));
 
-mongoose.connect(NODE_ENV === 'production' ? DATA_URL : 'mongodb://localhost:27017/bitfilmsdb', {
-  useNewUrlParser: true,
-});
+mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
 
 app.use(requestLogger);
 
