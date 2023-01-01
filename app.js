@@ -24,11 +24,11 @@ app.use(rateLimiter);
 
 // Массив доменов, с которых разрешены кросс-доменные запросы
 const allowedCors = [
-  'http://localhost:3001',
-  'http://jet.nomoredomains.work',
-  'https://jet.nomoredomains.work',
-  'http://api.jet.nomoredomains.work',
-  'https://api.jet.nomoredomains.work',
+  'http://localhost:3000',
+  'http://obivaniche-movies.nomoredomains.club',
+  'https://obivaniche-movies.nomoredomains.club',
+  'http://api.obivaniche-movies.nomoredomains.club',
+  'https://api.obivaniche-movies.nomoredomains.club',
 ];
 
 // безопасность
@@ -61,7 +61,7 @@ app.use((req, res, next) => {
 app.use('/', userRoutes); // запускаем импортированные роуты
 app.use('/', movieRoutes); // запускаем импортированные роуты
 
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb');
 
 app.use((req, res, next) => {
   next(new NotFoundError('Страница не найдена'));
