@@ -31,7 +31,7 @@ module.exports.createMovie = (request, response, next) => {
   const {
     country, director, duration,
     year, description, image, trailerLink,
-    thumbnail, nameRU, nameEN,
+    thumbnail, movieId, nameRU, nameEN,
   } = request.body; // получим из объекта запроса название и ссылку фильма
   console.log(request.body);
   const owner = request.user._id;
