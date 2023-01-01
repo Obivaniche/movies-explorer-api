@@ -13,7 +13,7 @@ const { requestLogger, errorLogger } = require('./middleware/logger');
 const rateLimiter = require('./middleware/rateLimiter');
 const NotFoundError = require('./errors/not-found-error');
 
-const { PORT = 3001 } = process.env;
+const { PORT = 3000 } = process.env;
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -61,7 +61,11 @@ app.use((req, res, next) => {
 app.use('/', userRoutes); // запускаем импортированные роуты
 app.use('/', movieRoutes); // запускаем импортированные роуты
 
-mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb');
+mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  family: 4,
+});
 
 app.use((req, res, next) => {
   next(new NotFoundError('Страница не найдена'));
