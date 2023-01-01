@@ -1,8 +1,8 @@
 ## Backend часть дипломного проекта
 
-IP: 84.201.160.126
+IP: 158.160.19.64
 
-Домен: expomovies.nomoredomains.icu/api
+Домен: api.obivaniche-movies.nomoredomains.club
 
 ## Директории
 

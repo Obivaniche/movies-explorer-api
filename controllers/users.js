@@ -1,86 +1,105 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+// файл контроллеров пользователя.
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
-const ConflictError = require('../utils/ConflictError');
-const NotFoundError = require('../utils/NotFound');
-const BadRequestError = require('../utils/BadRequest');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
+const ForbiddenError = require('../errors/forbidden-error');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getUserMe = (req, res, next) => {
-  User.findById(req.user._id).then((user) => {
-    if (!user) {
-      throw new NotFoundError('Пользователь не найден');
-    }
-    res.send({ data: user });
-  }).catch(next);
-};
-
-module.exports.createUser = (req, res, next) => {
+// создание пользователя, signup
+module.exports.createUser = (request, response, next) => {
+  // получим из объекта запроса имя, описание, аватар пользователя
   const {
     name, email, password,
-  } = req.body;
-  bcrypt.hash(password, 10).then((hash) => User.create({
-    name, email, password: hash,
-  }))
-    .then((user) => {
-      res.send({
-        data: {
-          name: user.name,
-          email: user.email,
-          _id: user._id,
-        },
-      });
-    }).catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Некорректные данные'));
-        return;
+  } = request.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name, email, password: hash,
+    })) // создадим пользователя на основе пришедших данных
+    .then((user) => response.status(201).send(user))
+    .catch((error) => {
+      // console.log(error.name);
+      if (error.name === 'ValidationError') {
+        next(new BadRequestError(`${Object.values(error.errors).map((err) => err.message).join(', ')}`));
+      } else if (error.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует'));
+      } else {
+        next(error); // Для всех остальных ошибок
       }
-      if (err.code === 11000) {
-        next(new ConflictError('Пользователь уже зарегестрирован'));
-        return;
-      }
-      next(err);
     });
 };
 
-module.exports.login = (req, res, next) => {
-  const { email, password } = req.body;
-
+// login
+module.exports.login = (request, response, next) => {
+  const { email, password } = request.body;
+  // console.log(request.body);
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key', { expiresIn: '7d' });
-      res.send({ token });
+      // создадим токен
+      // const token = jwt.sign({ _id: user._id }, 'super-strong-secret');
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
+      // вернём токен
+      response
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none', // <-- Выключаем данную опцию
+        })
+        .send({ data: user.toJSON() });
     })
     .catch(next);
 };
 
-module.exports.updateUserInfo = (req, res, next) => {
-  const { name, email } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, email },
-    { new: true, runValidators: true },
-  )
+// выход
+module.exports.signout = (req, res) => {
+  res
+    .status(200)
+    .clearCookie('jwt')
+    .send({ message: 'Выход' });
+};
+
+// информация о текущем пользователе
+module.exports.getUser = (request, response, next) => {
+  const userId = request.user._id;
+  console.log(request.user);
+  User.findById(userId)
     .then((user) => {
       if (user) {
-        res.send({ data: user });
-        return;
+        return response.send({
+          data: user,
+        });
       }
-      throw new NotFoundError('Пользователь не найден');
+      throw new ForbiddenError (`Пользователь по указанному id ${request.user._id} не найден`);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Некорректные данные'));
-        return;
-      }
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Некорректный ID'));
-        return;
-      }
-      if (err.code === 11000) {
-        next(new ConflictError('Пользователь уже зарегестрирован'));
-      }
-      next(err);
-    });
+    .catch(next);
 };
+
+// обновление профиля
+module.exports.updateUser = (request, response, next) => User.findByIdAndUpdate(
+  // console.log(request.user._id),
+  request.user._id,
+  { name: request.body.name, email: request.body.email },
+  { new: true, runValidators: true }, // обработчик then получит на вход обновлённую запись
+)
+  .then((userUpdate) => {
+    if (!userUpdate) {
+      throw new NotFoundError(`Запрашиваемый пользователь с id ${request.user._id} не найден`);
+    }
+    return response.send({ data: userUpdate });
+  })
+  .catch((error) => {
+    if (error.name === 'ValidationError') {
+      next(new BadRequestError(`${Object.values(error.errors).map((err) => err.message).join(', ')}`));
+    } else if (error.code === 11000) {
+      next(new ConflictError
+        (`Пользователь с таким email - ${request.body.email} уже существует, введите другой email`)
+      );
+    } else {
+      next(error); // Для всех остальных ошибок
+    }
+  });

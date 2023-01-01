@@ -1,43 +1,40 @@
 {
   "name": "movies-explorer-api",
   "version": "1.0.0",
-  "description": "Дипломный проект Movies explorer",
+  "description": "backend",
   "main": "app.js",
   "scripts": {
-    "lint": "npx eslint .",
-    "dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Obivaniche/movies-explorer-api.git"
+    "url": "git+https://github.com/SashaAnshukov/movies-explorer-api.git"
   },
-  "author": "Vladislav Smirnov",
+  "author": "Саша Аншуков",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Obivaniche/movies-explorer-api/issues"
+    "url": "https://github.com/SashaAnshukov/movies-explorer-api/issues"
   },
-  "homepage": "https://github.com/Obivaniche/movies-explorer-api#readme",
+  "homepage": "https://github.com/SashaAnshukov/movies-explorer-api#readme",
   "devDependencies": {
-    "eslint": "^8.22.0",
+    "eslint": "^8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "nodemon": "^2.0.19"
+    "eslint-plugin-import": "^2.25.4",
+    "nodemon": "^2.0.15"
   },
-  "keywords": [],
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.0",
+    "body-parser": "^1.19.1",
     "celebrate": "^15.0.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.1",
-    "express-rate-limit": "^6.6.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.2",
+    "express-rate-limit": "^6.3.0",
     "express-winston": "^4.2.0",
-    "helmet": "^6.0.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.5.3",
+    "mongoose": "^6.2.7",
     "validator": "^13.7.0",
-    "winston": "^3.8.2"
+    "winston": "^3.5.1"
   }
 }

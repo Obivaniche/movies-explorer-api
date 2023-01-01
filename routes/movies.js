@@ -1,7 +1,17 @@
+// файл маршрутов карточек
 const router = require('express').Router();
-const { Joi, celebrate } = require('celebrate');
-const { getMovies, addMovie, deleteMovie } = require('../controllers/movies');
+const { celebrate, Joi } = require('celebrate');
+const auth = require('../middleware/auth');
+const validateURL = require('../middleware/methods');
 
+const {
+  getMovies, createMovie, deleteMovie,
+} = require('../controllers/movies');
+
+// авторизация
+router.use(auth);
+
+// роуты, требующие авторизации
 router.get('/movies', getMovies);
 
 router.post(
@@ -13,21 +23,26 @@ router.post(
       duration: Joi.number().required(),
       year: Joi.string().required(),
       description: Joi.string().required(),
-      image: Joi.string().required().regex(/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w.-]*)*\/?$/),
-      trailer: Joi.string().required().regex(/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w.-]*)*\/?$/),
-      thumbnail: Joi.string().required().regex(/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w.-]*)*\/?$/),
-      movieId: Joi.number().required(),
+      image: Joi.string().required().custom(validateURL, 'custom validation'),
+      trailerLink: Joi.string().required().custom(validateURL, 'custom validation'),
+      thumbnail: Joi.string().required().custom(validateURL, 'custom validation'),
+      movieId: Joi.required(),
       nameRU: Joi.string().required(),
       nameEN: Joi.string().required(),
     }),
   }),
-  addMovie,
+  createMovie,
 );
 
-router.delete('/movies/:movieId', celebrate({
-  params: {
-    movieId: Joi.string().alphanum().length(24).hex(),
-  },
-}), deleteMovie);
+router.delete(
+  '/movies/:id',
+  // валидация
+  celebrate({
+    params: Joi.object().keys({
+      id: Joi.string().hex().length(24),
+    }),
+  }),
+  deleteMovie,
+);
 
 module.exports = router;
